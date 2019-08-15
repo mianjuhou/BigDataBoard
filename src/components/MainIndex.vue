@@ -118,21 +118,21 @@
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>教育资源上传总数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">45271</span>个</span>
+                <span>学校总数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">77</span>个</span>
               </div>
             </div>
             <div
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>微课上传个数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">45271</span>个</span>
+                <span>学生总人数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">65594</span>个</span>
               </div>
             </div>
             <div
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>习题上传个数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">45271</span>个</span>
+                <span>教师总人数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">6540</span>个</span>
               </div>
             </div>
           </div>
