@@ -1,3 +1,4 @@
+<script src="../api/school.js"></script>
 <template>
   <div style="width: 1920px;height: 1152px;color: white;background-color: #000927;">
     <el-container style="height: 100%;">
@@ -41,21 +42,21 @@
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>教育资源上传总数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">45271</span>个</span>
+                <span>教育资源上传总数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">{{centerData.resource}}</span>个</span>
               </div>
             </div>
             <div
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>微课上传个数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">45271</span>个</span>
+                <span>微课上传个数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">{{centerData.class}}</span>个</span>
               </div>
             </div>
             <div
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>习题上传个数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">45271</span>个</span>
+                <span>习题上传个数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">{{centerData.exe}}</span>个</span>
               </div>
             </div>
           </div>
@@ -136,24 +137,20 @@
 </template>
 
 <script>
+  import schoolApi from '@/api/school';
+
   export default {
     name: "Teacher",
     data() {
       return {
         leftSelect: 0,
         rightSelect: 0,
-        leftBarData: [
-          [110003, 120003, 132000, 142003, 16203, 23489, 29034, 204970, 431744, 130230],
-          [180003, 170003, 162000, 152003, 14203, 23489, 29034, 104970, 131744, 630230]
-        ],
-        rightBarBarData: [
-          [110003, 120003, 132000, 142003, 16203, 23489, 29034, 104970, 131744, 110230],
-          [180003, 170003, 162000, 152003, 14203, 23489, 29034, 104970, 131744, 330230],
-          [160003, 170003, 182000, 192003, 14203, 23489, 29034, 104970, 131744, 530230]
-        ],
+        leftBarData: [],
+        rightBarBarData: [],
+        centerData: {},
       }
     },
-    mounted() {
+    created() {
       this.loadData();
     },
     methods: {
@@ -177,7 +174,7 @@
           },
           xAxis: {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            data: ['2019-01', '2019-02', '2019-03', '2019-04', '2019-05', '2019-06'],
             axisLabel: {
               color: '#FFFFFF'
             },
@@ -250,31 +247,21 @@
         };
         bar.setOption(option);
       },
-      drawCenter1() {
+      drawCenter1(centerData) {
+        var names = centerData.names;
+        var nums = centerData.nums;
+        var data = [];
+        for (let i = 0; i < names.length; i++) {
+          var item = [];
+          item.push(names[i]);
+          item.push(nums[i]);
+          data.push(item);
+        }
+        console.log(JSON.stringify(data));
+
         let scatter = this.$echarts.init(document.getElementById('center_1'));
-        var data = [
-          [],
-          [
-            [44056, 81.8, 23968973, 'Australia', 2015],
-            [43294, 81.7, 35939927, 'Canada', 2015],
-            [13334, 76.9, 1376048943, 'China', 2015],
-            [21291, 78.5, 11389562, 'Cuba', 2015],
-            [38923, 80.8, 5503457, 'Finland', 2015],
-            [37599, 81.9, 64395345, 'France', 2015],
-            [44053, 81.1, 80688545, 'Germany', 2015],
-            [42182, 82.8, 329425, 'Iceland', 2015],
-            [5903, 86.8, 1311050527, 'India', 2015],
-            [56162, 83.5, 136573481, 'Japan', 2015],
-            [1390, 71.4, 25155317, 'North Korea', 2015],
-            [34644, 80.7, 50293439, 'South Korea', 2015],
-            [34186, 80.6, 4528526, 'New Zealand', 2015],
-            [64304, 81.6, 5210967, 'Norway', 2015],
-            [24787, 77.3, 38611794, 'Poland', 2015],
-            [23038, 73.13, 143456918, 'Russia', 2015],
-            [19360, 76.5, 78665830, 'Turkey', 2015],
-            [38225, 81.4, 64715810, 'United Kingdom', 2015],
-            [5903, 89.1, 1311050527, 'United States', 2015]]
-        ];
+        var min = data[data.length - 1][1];
+        var step = (data[0][1] - min) / data.length;
         var option = {
           grid: {
             left: '2%',
@@ -285,6 +272,8 @@
           },
           backgroundColor: '#000927',
           xAxis: {
+            type: 'category',
+            data: names,
             axisLine: {
               lineStyle: {
                 color: '#003C7A'
@@ -321,11 +310,11 @@
             scale: true
           },
           series: [{
-            name: '2015',
-            data: data[1],
+            data: data,
             type: 'scatter',
-            symbolSize: function (data) {
-              return Math.sqrt(data[2]) / 5e2;
+            symbolSize: function (itemData) {
+              var res = 35 + 2 * (itemData[1] - min) / step;
+              return res;
             },
             label: {
               normal: {
@@ -350,7 +339,7 @@
         };
         scatter.setOption(option);
       },
-      drawCenter0() {
+      drawCenter0(centerData) {
         let bar = this.$echarts.init(document.getElementById('center_0'));
         var option = {
           backgroundColor: '#000927',
@@ -374,7 +363,7 @@
             axisTick: {
               show: false
             },
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', '11', '22', '33']
+            data: centerData.names
           },
           yAxis: {
             type: 'value',
@@ -397,7 +386,7 @@
             }
           },
           series: [{
-            data: [120, 200, 150, 80, 70, 110, 130, 100, 140, 120],
+            data: centerData.nums,
             type: 'bar',
             barWidth: 20,
             itemStyle: {
@@ -446,12 +435,94 @@
         });
       },
       loadData() {
-        this.drawLine(document.getElementById('line_left'));
-        this.drawLine(document.getElementById('line_right'));
-        this.drawLeftBar(document.getElementById('bar_left_0'), this.leftBarData[0]);
-        this.drawRightBar(document.getElementById('bar_right_0'), this.rightBarBarData[0]);
-        this.drawCenter0();
-        this.drawCenter1();
+        schoolApi.findBSKNum()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              var data = ret.data;
+              this.drawLine(document.getElementById('line_left'), data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        schoolApi.findClassMonth()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              var data = ret.data;
+              this.drawLine(document.getElementById('line_right'), data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        this.$axios.all([schoolApi.findBKTop10(), schoolApi.findSKTop10()])
+          .then(this.$axios.spread((resBK, resSK) => {
+            var retBK = resBK.data;
+            var retSK = resSK.data;
+            this.leftBarData.push(retBK.data);
+            this.leftBarData.push(retSK.data);
+            this.drawLeftBar(document.getElementById('bar_left_0'), this.leftBarData[0]);
+          }))
+          .catch(error => {
+            console.log(error);
+          });
+        this.$axios.all([schoolApi.findBClass(), schoolApi.findMClass(), schoolApi.findAClass()])
+          .then(this.$axios.spread((resB, resM, resA) => {
+            var retB = resB.data;
+            var retM = resM.data;
+            var retA = resA.data;
+            this.rightBarBarData.push(retB.data);
+            this.rightBarBarData.push(retM.data);
+            this.rightBarBarData.push(retA.data);
+            this.drawRightBar(document.getElementById('bar_right_0'), this.rightBarBarData[0]);
+          }))
+          .catch(error => {
+            console.log(error);
+          });
+        schoolApi.findResourceNums()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.centerData = ret.data;
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        schoolApi.findResourceTop10()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.drawCenter0(ret.data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        var date = DateUtil.format(new Date(), "yyyy-MM");
+        schoolApi.findResourceMonthTop10(date)
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.drawCenter1(ret.data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+
         this.drawCenter2();
       },
       drawRightBar(barDiv, barData) {
@@ -484,7 +555,7 @@
                 fontSize: '12',
               }
             },
-            data: ['第一小学', '三仓镇中学', '实验小学', '时堰镇中学', '粱垛镇中学', '创新中学', '新街镇中学', '富安镇中学', '安丰中学', '东台中学']
+            data: barData.names
           }, {
             axisTick: 'none',
             axisLine: 'none',
@@ -494,7 +565,7 @@
                 fontSize: '12',
               }
             },
-            data: barData
+            data: barData.nums
           }],
           series: [
             {
@@ -502,7 +573,7 @@
               type: 'bar',
               barWidth: 20,
               yAxisIndex: 0,
-              data: barData,
+              data: barData.nums,
               itemStyle: {
                 normal: {
                   color: new this.$echarts.graphic.LinearGradient(1, 0, 0, 0, [{
@@ -522,7 +593,7 @@
               type: 'bar',
               barWidth: 20,
               yAxisIndex: 1,
-              data: [1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000],
+              data: [100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000],
               itemStyle: {
                 normal: {
                   color: '#033458'
@@ -564,7 +635,7 @@
                 fontSize: '12',
               }
             },
-            data: ['第一小学', '三仓镇中学', '实验小学', '时堰镇中学', '粱垛镇中学', '创新中学', '新街镇中学', '富安镇中学', '安丰中学', '东台中学']
+            data: barData.names
           }, {
             axisTick: 'none',
             axisLine: 'none',
@@ -574,7 +645,7 @@
                 fontSize: '12',
               }
             },
-            data: barData
+            data: barData.nums
           }],
           series: [
             {
@@ -582,7 +653,7 @@
               type: 'bar',
               barWidth: 20,
               yAxisIndex: 0,
-              data: barData,
+              data: barData.nums,
               itemStyle: {
                 normal: {
                   color: new this.$echarts.graphic.LinearGradient(1, 0, 0, 0, [{
@@ -602,7 +673,7 @@
               type: 'bar',
               barWidth: 20,
               yAxisIndex: 1,
-              data: [1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000],
+              data: [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
               itemStyle: {
                 normal: {
                   color: '#033458'
@@ -614,7 +685,7 @@
         };
         bar.setOption(option);
       },
-      drawLine(lineDiv) {
+      drawLine(lineDiv, data) {
         let line = this.$echarts.init(lineDiv);
         var option = {
             backgroundColor: '#000927',
@@ -627,7 +698,7 @@
             },
             legend: {
               data: ['总数', '备课次数', '授课次数'],
-              right: "10%",
+              right: "1%",
               textStyle: {
                 color: '#FFF'
               }
@@ -635,7 +706,7 @@
             xAxis: {
               type: 'category',
               boundaryGap: false,
-              data: ['2019-01', '2019-02', '2019-03', '2019-04', '2019-05', '2019-06', '2019-07'],
+              data: data.names,
               axisLabel: {
                 color: '#FFF'
               },
@@ -668,7 +739,7 @@
             series: [
               {
                 name: '总数',
-                data: [820, 932, 901, 934, 1290, 1330, 1320],
+                data: data.num1,
                 type: 'line',
                 showSymbol: false,
                 symbol: 'circle',
@@ -693,7 +764,7 @@
               },
               {
                 name: '备课次数',
-                data: [800, 902, 90, 934, 120, 130, 130],
+                data: data.num2,
                 type: 'line',
                 showSymbol: false,
                 symbol: 'circle',
@@ -717,7 +788,137 @@
               },
               {
                 name: '授课次数',
-                data: [900, 252, 901, 954, 1200, 1130, 1230],
+                data: data.num3,
+                type: 'line',
+                showSymbol: false,
+                symbol: 'circle',
+                lineStyle: {
+                  width: 3
+                },
+                itemStyle: {
+                  normal: {
+                    color: '#FF9A39'
+                  }
+                },
+                areaStyle: {
+                  color: new this.$echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                    offset: 0,
+                    color: 'rgba(255, 1, 55,0.3)'
+                  }, {
+                    offset: 1,
+                    color: 'rgba(255, 255, 255,0)'
+                  }])
+                }
+              }
+            ]
+          }
+        ;
+        line.setOption(option);
+      },
+      drawLineRight(lineDiv) {
+        let line = this.$echarts.init(lineDiv);
+        var option = {
+            backgroundColor: '#000927',
+            grid: {
+              left: '1%',
+              right: 0,
+              top: '10%',
+              bottom: '2%',
+              containLabel: true
+            },
+            legend: {
+              data: ['课前发布次数', '课中发布次数', '课后发布次数'],
+              right: "1%",
+              textStyle: {
+                color: '#FFF'
+              }
+            },
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: ['2019-01', '2019-02', '2019-03', '2019-04', '2019-05', '2019-06'],
+              axisLabel: {
+                color: '#FFF'
+              },
+              axisTick: {
+                show: false
+              },
+              axisLine: {
+                lineStyle: {
+                  color: '#292F4E'
+                }
+              }
+            },
+            yAxis: {
+              type: 'value',
+              axisLine: {
+                show: false
+              },
+              axisTick: {
+                show: false
+              },
+              axisLabel: {
+                color: '#FFF'
+              },
+              splitLine: {
+                lineStyle: {
+                  color: '#292F4E'
+                }
+              }
+            },
+            series: [
+              {
+                name: '课前发布次数',
+                data: [820, 932, 901, 934, 1290, 1330],
+                type: 'line',
+                showSymbol: false,
+                symbol: 'circle',
+                lineStyle: {
+                  width: 3
+                },
+                itemStyle: {
+                  normal: {
+                    color: '#A950FF'
+                  }
+                },
+                areaStyle: {
+                  color: new this.$echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                    offset: 0,
+                    color: 'rgba(167, 82, 255,0.3)'
+                  }, {
+                    offset: 1,
+                    color: 'rgba(255, 255, 255,0)'
+                  }
+                  ])
+                }
+              },
+              {
+                name: '课中发布次数',
+                data: [800, 902, 90, 934, 120, 130],
+                type: 'line',
+                showSymbol: false,
+                symbol: 'circle',
+                lineStyle: {
+                  width: 3
+                },
+                itemStyle: {
+                  normal: {
+                    color: '#70BCFF'
+                  }
+                },
+                areaStyle: {
+                  color: new this.$echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                    offset: 0,
+                    color: 'rgba(110, 187, 255,0.2)'
+                  }, {
+                    offset: 1,
+                    color: 'rgba(255, 255, 255,0)'
+                  }])
+                }
+              },
+              {
+                name: '课后发布次数',
+                data: [900, 252, 901, 954, 1200, 1130],
                 type: 'line',
                 showSymbol: false,
                 symbol: 'circle',

@@ -21,14 +21,14 @@ export default new Router({
       component: Teacher
     },
     {
-      path: '/',
-      // path: '/main',
+      // path: '/',
+      path: '/main',
       name: 'Main',
       component: Main
     },
     {
-      // path: '/',
-      path: '/mainIndex',
+      path: '/',
+      // path: '/mainIndex',
       name: 'MainIndex',
       component: MainIndex
     }
