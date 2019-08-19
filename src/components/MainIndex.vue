@@ -17,7 +17,7 @@
                 <th style="width: 15%;" align="left">学生总数</th>
                 <th style="width: 15%;" align="left">教师总数</th>
                 </thead>
-                <tr v-for="school of school0" style="background-color: #00133B;color: #3C99BF;font-size: 13px;">
+                <tr v-for="school of school0" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
                   <th align="left" style="padding-left: 25px;padding-top: 6px;padding-bottom: 6px;">
                     {{school.name}}
                   </th>
@@ -39,7 +39,7 @@
                     <div style="width: 100%;border-top: #072A71 dashed 2px;"></div>
                   </th>
                 </tr>
-                <tr v-for="school of school1" style="background-color: #00133B;color: #3C99BF;font-size: 13px;">
+                <tr v-for="school of school1" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
                   <th align="left" style="padding-left: 25px;padding-top: 6px;padding-bottom: 6px;">
                     {{school.name}}
                   </th>
@@ -61,7 +61,7 @@
                     <div style="width: 100%;border-top: #072A71 dashed 2px;"></div>
                   </th>
                 </tr>
-                <tr v-for="school of school2" style="background-color: #00133B;color: #3C99BF;font-size: 13px;">
+                <tr v-for="school of school2" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
                   <th align="left" style="padding-left: 25px;padding-top: 6px;padding-bottom: 6px;">
                     {{school.name}}
                   </th>
@@ -78,7 +78,7 @@
           <div style="margin-top: 10px;">
             <div style="display: flex;align-items: center;width: 96%;margin-top: 10px;margin-bottom: 10px;">
               <div style="width: 12px;height: 20px;background-color: #51C8EF;margin-left: 15px;"></div>
-              <span style="color: #4ABBE0;font-size: 18px;margin-left: 10px;">学生人数统计</span>
+              <span style="color: #4ABBE0;font-size: 18px;margin-left: 10px;">学生信息-男女比例</span>
             </div>
             <el-row>
               <el-col :span="8">
@@ -951,13 +951,13 @@
           legend: {
             right: '10%',
             data: [
-              {name: '总数', icon: 'circle', textStyle: {color: '#5E7AD1', fontSize: 10}},
-              {name: '微课', icon: 'circle', textStyle: {color: '#5E7AD1', fontSize: 10}},
-              {name: '试题', icon: 'circle', textStyle: {color: '#5E7AD1', fontSize: 10}}],
+              {name: '总体', icon: 'circle', textStyle: {color: '#5E7AD1', fontSize: 10}},
+              {name: '男', icon: 'circle', textStyle: {color: '#5E7AD1', fontSize: 10}},
+              {name: '女', icon: 'circle', textStyle: {color: '#5E7AD1', fontSize: 10}}],
           },
           xAxis: {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed'],
+            data: ['小学', '初中', '高中'],
             axisLabel: {
               color: '#FFFFFF'
             },
@@ -991,7 +991,7 @@
             }
           },
           series: [{
-            name: '总数',
+            name: '总体',
             type: 'bar',
             barGap: 0,
             data: [320, 332, 301],
@@ -1004,7 +1004,7 @@
             barWidth: 20
           },
             {
-              name: '微课',
+              name: '男',
               type: 'bar',
               data: [220, 182, 191],
               itemStyle: {
@@ -1016,7 +1016,7 @@
               barWidth: 20
             },
             {
-              name: '试题',
+              name: '女',
               type: 'bar',
               data: [150, 232, 201],
               itemStyle: {
