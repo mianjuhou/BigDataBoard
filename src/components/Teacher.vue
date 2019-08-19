@@ -138,6 +138,7 @@
 
 <script>
   import schoolApi from '@/api/school';
+  import DateUtil from '@/util/DateUtil';
 
   export default {
     name: "Teacher",
@@ -148,13 +149,216 @@
         leftBarData: [],
         rightBarBarData: [],
         centerData: {},
+        websocket: null,
+        centerData0: {},
+        centerData1: {},
+        centerData2: {},
+        lineLeftData: {},
       }
     },
     created() {
       this.loadData();
     },
+    mounted() {
+      this.loadWS();
+    },
+    beforeDestroy() {
+      this.websocket.close();
+    },
     methods: {
-      drawCenter2() {
+      loadData() {
+        this.loadLineLeft();
+        this.loadLineRight();
+        this.loadLeftBar();
+        this.loadRightBar();
+        this.loadCenter();
+        this.loadCenter0();
+        this.loadCenter1();
+        this.loadCenter2();
+      },
+      loadWS() {
+        var self = this;
+        if ('WebSocket' in window) {
+          this.websocket = new WebSocket("ws://127.0.0.1:9001/websocket");
+        } else {
+          alert('Not support websocket')
+        }
+
+        //连接发生错误的回调方法
+        this.websocket.onerror = function () {
+          alert("socket 出现问题");
+        };
+
+        //连接成功建立的回调方法
+        this.websocket.onopen = function (event) {
+          console.log("socket 建立成功");
+        }
+
+        //接收到消息的回调方法
+        this.websocket.onmessage = function (event) {
+          var index = event.data;
+          if (index == 1) {
+            self.loadLineLeft();
+          } else if (index == 2) {
+            self.loadLeftBar();
+          } else if (index == 3) {
+            self.loadLeftBar();
+          } else if (index == 4) {
+            self.loadCenter();
+          } else if (index == 5) {
+            self.loadCenter0();
+          } else if (index == 6) {
+            self.loadCenter1();
+          } else if (index == 7) {
+            self.loadCenter2();
+          } else if (index == 8) {
+            self.loadLineRight();
+          } else if (index == 9) {
+            self.loadRightBar();
+          } else if (index == 10) {
+            self.loadRightBar();
+          } else if (index == 11) {
+            self.loadRightBar();
+          }
+        }
+        //连接关闭的回调方法
+        this.websocket.onclose = function () {
+          console.log("socket 关闭");
+        }
+
+        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+        // this.window.onbeforeunload = function () {
+        //   this.websocket.close();
+        // }
+      },
+      loadLineLeft() {
+        schoolApi.findBSKNum()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              var data = ret.data;
+              this.drawLineLeft(data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadLineRight() {
+        schoolApi.findClassMonth()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              var data = ret.data;
+              this.drawLineRight(data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadLeftBar() {
+        this.$axios.all([schoolApi.findBKTop10(), schoolApi.findSKTop10()])
+          .then(this.$axios.spread((resBK, resSK) => {
+            var retBK = resBK.data;
+            var retSK = resSK.data;
+            this.leftBarData = [];
+            this.leftBarData.push(retBK.data);
+            this.leftBarData.push(retSK.data);
+            if (this.leftSelect == 0) {
+              this.drawLeftBar(document.getElementById('bar_left_0'), this.leftBarData[0]);
+            } else if (this.leftSelect == 1) {
+              console.log("重绘制左2");
+              this.drawLeftBar(document.getElementById('bar_left_1'), this.leftBarData[1]);
+            }
+          }))
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadRightBar() {
+        this.$axios.all([schoolApi.findBClass(), schoolApi.findMClass(), schoolApi.findAClass()])
+          .then(this.$axios.spread((resB, resM, resA) => {
+            var retB = resB.data;
+            var retM = resM.data;
+            var retA = resA.data;
+            this.rightBarBarData = [];
+            this.rightBarBarData.push(retB.data);
+            this.rightBarBarData.push(retM.data);
+            this.rightBarBarData.push(retA.data);
+            if (this.rightSelect == 0) {
+              this.drawRightBar(document.getElementById('bar_right_0'), this.rightBarBarData[0]);
+            } else if (this.rightSelect == 1) {
+              this.drawRightBar(document.getElementById('bar_right_1'), this.rightBarBarData[1]);
+            } else if (this.rightSelect == 2) {
+              this.drawRightBar(document.getElementById('bar_right_2'), this.rightBarBarData[2]);
+            }
+          }))
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadCenter() {
+        schoolApi.findResourceNums()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.centerData = ret.data;
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadCenter0() {
+        schoolApi.findResourceTop10()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.drawCenter0(ret.data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadCenter1() {
+        schoolApi.findResourceMonthTop10()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.drawCenter1(ret.data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      loadCenter2() {
+        schoolApi.findResourceMonth()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.drawCenter2(ret.data);
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      },
+      drawCenter2(centerData) {
         let bar = this.$echarts.init(document.getElementById('center_2'));
         var option = {
           grid: {
@@ -174,7 +378,7 @@
           },
           xAxis: {
             type: 'category',
-            data: ['2019-01', '2019-02', '2019-03', '2019-04', '2019-05', '2019-06'],
+            data: centerData.names,
             axisLabel: {
               color: '#FFFFFF'
             },
@@ -211,7 +415,7 @@
             name: '总数',
             type: 'bar',
             barGap: 0,
-            data: [320, 332, 301, 334, 390, 220],
+            data: centerData.num1,
             itemStyle: {
               normal: {
                 color: '#A953FF',
@@ -223,7 +427,7 @@
             {
               name: '微课',
               type: 'bar',
-              data: [220, 182, 191, 234, 290, 220],
+              data: centerData.num2,
               itemStyle: {
                 normal: {
                   color: '#29AAFF',
@@ -235,7 +439,7 @@
             {
               name: '试题',
               type: 'bar',
-              data: [150, 232, 201, 154, 190, 220],
+              data: centerData.num3,
               itemStyle: {
                 normal: {
                   color: '#FF973A',
@@ -257,8 +461,6 @@
           item.push(nums[i]);
           data.push(item);
         }
-        console.log(JSON.stringify(data));
-
         let scatter = this.$echarts.init(document.getElementById('center_1'));
         var min = data[data.length - 1][1];
         var step = (data[0][1] - min) / data.length;
@@ -415,7 +617,7 @@
       leftSelectClick(index) {
         this.leftSelect = index;
         this.$nextTick(function () {
-          if (index == 0) {
+          if (this.leftSelect == 0) {
             this.drawLeftBar(document.getElementById('bar_left_0'), this.leftBarData[0]);
           } else if (index == 1) {
             this.drawLeftBar(document.getElementById('bar_left_1'), this.leftBarData[1]);
@@ -425,105 +627,14 @@
       rightSelectClick(index) {
         this.rightSelect = index;
         this.$nextTick(function () {
-          if (index == 0) {
+          if (this.rightSelect == 0) {
             this.drawRightBar(document.getElementById('bar_right_0'), this.rightBarBarData[0]);
-          } else if (index == 1) {
+          } else if (this.rightSelect == 1) {
             this.drawRightBar(document.getElementById('bar_right_1'), this.rightBarBarData[1]);
-          } else if (index == 2) {
+          } else if (this.rightSelect == 2) {
             this.drawRightBar(document.getElementById('bar_right_2'), this.rightBarBarData[2]);
           }
         });
-      },
-      loadData() {
-        schoolApi.findBSKNum()
-          .then(response => {
-            var ret = response.data;
-            if (ret.flag) {
-              var data = ret.data;
-              this.drawLine(document.getElementById('line_left'), data);
-            } else {
-              console.log(ret.message);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        schoolApi.findClassMonth()
-          .then(response => {
-            var ret = response.data;
-            if (ret.flag) {
-              var data = ret.data;
-              this.drawLine(document.getElementById('line_right'), data);
-            } else {
-              console.log(ret.message);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        this.$axios.all([schoolApi.findBKTop10(), schoolApi.findSKTop10()])
-          .then(this.$axios.spread((resBK, resSK) => {
-            var retBK = resBK.data;
-            var retSK = resSK.data;
-            this.leftBarData.push(retBK.data);
-            this.leftBarData.push(retSK.data);
-            this.drawLeftBar(document.getElementById('bar_left_0'), this.leftBarData[0]);
-          }))
-          .catch(error => {
-            console.log(error);
-          });
-        this.$axios.all([schoolApi.findBClass(), schoolApi.findMClass(), schoolApi.findAClass()])
-          .then(this.$axios.spread((resB, resM, resA) => {
-            var retB = resB.data;
-            var retM = resM.data;
-            var retA = resA.data;
-            this.rightBarBarData.push(retB.data);
-            this.rightBarBarData.push(retM.data);
-            this.rightBarBarData.push(retA.data);
-            this.drawRightBar(document.getElementById('bar_right_0'), this.rightBarBarData[0]);
-          }))
-          .catch(error => {
-            console.log(error);
-          });
-        schoolApi.findResourceNums()
-          .then(response => {
-            var ret = response.data;
-            if (ret.flag) {
-              this.centerData = ret.data;
-            } else {
-              console.log(ret.message);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        schoolApi.findResourceTop10()
-          .then(response => {
-            var ret = response.data;
-            if (ret.flag) {
-              this.drawCenter0(ret.data);
-            } else {
-              console.log(ret.message);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        var date = DateUtil.format(new Date(), "yyyy-MM");
-        schoolApi.findResourceMonthTop10(date)
-          .then(response => {
-            var ret = response.data;
-            if (ret.flag) {
-              this.drawCenter1(ret.data);
-            } else {
-              console.log(ret.message);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          });
-
-        this.drawCenter2();
       },
       drawRightBar(barDiv, barData) {
         let bar = this.$echarts.init(barDiv);
@@ -685,8 +796,8 @@
         };
         bar.setOption(option);
       },
-      drawLine(lineDiv, data) {
-        let line = this.$echarts.init(lineDiv);
+      drawLineLeft(data) {
+        let line = this.$echarts.init(document.getElementById('line_left'));
         var option = {
             backgroundColor: '#000927',
             grid: {
@@ -815,8 +926,8 @@
         ;
         line.setOption(option);
       },
-      drawLineRight(lineDiv) {
-        let line = this.$echarts.init(lineDiv);
+      drawLineRight(data) {
+        let line = this.$echarts.init(document.getElementById('line_right'));
         var option = {
             backgroundColor: '#000927',
             grid: {
@@ -836,7 +947,7 @@
             xAxis: {
               type: 'category',
               boundaryGap: false,
-              data: ['2019-01', '2019-02', '2019-03', '2019-04', '2019-05', '2019-06'],
+              data: data.names,
               axisLabel: {
                 color: '#FFF'
               },
@@ -869,7 +980,7 @@
             series: [
               {
                 name: '课前发布次数',
-                data: [820, 932, 901, 934, 1290, 1330],
+                data: data.num1,
                 type: 'line',
                 showSymbol: false,
                 symbol: 'circle',
@@ -894,7 +1005,7 @@
               },
               {
                 name: '课中发布次数',
-                data: [800, 902, 90, 934, 120, 130],
+                data: data.num2,
                 type: 'line',
                 showSymbol: false,
                 symbol: 'circle',
@@ -918,7 +1029,7 @@
               },
               {
                 name: '课后发布次数',
-                data: [900, 252, 901, 954, 1200, 1130],
+                data: data.num3,
                 type: 'line',
                 showSymbol: false,
                 symbol: 'circle',
@@ -944,7 +1055,7 @@
           }
         ;
         line.setOption(option);
-      }
+      },
     }
   }
 </script>

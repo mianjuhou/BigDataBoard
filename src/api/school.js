@@ -32,9 +32,15 @@ export default {
       method: 'get'
     })
   },
-  findResourceMonthTop10(yearMonth) {
+  findResourceMonthTop10() {
     return request({
-      url: `/${group_name}/resourcemonthtop/${yearMonth}`,
+      url: `/${group_name}/resourcemonthtop`,
+      method: 'get'
+    })
+  },
+  findResourceMonth() {
+    return request({
+      url: `/${group_name}/resourcemonth`,
       method: 'get'
     })
   },
