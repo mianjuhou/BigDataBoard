@@ -17,7 +17,7 @@
                 <th style="width: 15%;" align="left">学生总数</th>
                 <th style="width: 15%;" align="left">教师总数</th>
                 </thead>
-                <tr v-for="school of school0" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
+                <tr v-for="school of schools.school0" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
                   <th align="left" style="padding-left: 25px;padding-top: 6px;padding-bottom: 6px;">
                     {{school.name}}
                   </th>
@@ -39,7 +39,7 @@
                     <div style="width: 100%;border-top: #072A71 dashed 2px;"></div>
                   </th>
                 </tr>
-                <tr v-for="school of school1" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
+                <tr v-for="school of schools.school1" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
                   <th align="left" style="padding-left: 25px;padding-top: 6px;padding-bottom: 6px;">
                     {{school.name}}
                   </th>
@@ -61,7 +61,7 @@
                     <div style="width: 100%;border-top: #072A71 dashed 2px;"></div>
                   </th>
                 </tr>
-                <tr v-for="school of school2" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
+                <tr v-for="school of schools.school2" style="background-color: #00133B;color: #37EFE9;font-size: 13px;">
                   <th align="left" style="padding-left: 25px;padding-top: 6px;padding-bottom: 6px;">
                     {{school.name}}
                   </th>
@@ -118,21 +118,21 @@
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>学校总数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">77</span>个</span>
+                <span>学校总数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">{{fourData['学校']}}</span>个</span>
               </div>
             </div>
             <div
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>学生总人数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">65594</span>个</span>
+                <span>学生总人数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">{{fourData['学生']}}</span>个</span>
               </div>
             </div>
             <div
               style="border: #056D98 solid 1px;height: 80px;padding: 6px;">
               <div
                 style="background-color: #033251;display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;">
-                <span>教师总人数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">6540</span>个</span>
+                <span>教师总人数 &nbsp;&nbsp; <span style="color: white;font-size: 20px;">{{fourData['教师']}}</span>个</span>
               </div>
             </div>
           </div>
@@ -202,46 +202,118 @@
 
 <script>
   import GeoJson from '@/assets/dongtai';
+  import mainDataApi from '@/api/mainData';
 
   export default {
     name: "MainIndex",
     data() {
       return {
-        school0: [
-          {name: '东台市实验小学', snum: '4609', tnum: '187'},
-          {name: '东台市实验小学启平分校', snum: '2998', tnum: '130'},
-          {name: '东台市第一小学', snum: '2601', tnum: '113'},
-          {name: '东台市三仓镇小学', snum: '1555', tnum: '65'}
-        ],
-        school1: [
-          {name: '东台市实验中学南校区', snum: '3303', tnum: '165'},
-          {name: '东台市实验中学', snum: '2653', tnum: '134'},
-          {name: '东台市东双羽学校', snum: '1704', tnum: '98'},
-          {name: '东台市实验中学教育集团城东分校', snum: '1196', tnum: '66'}
-        ],
-        school2: [
-          {name: '东台中学', snum: '3044', tnum: '171'},
-          {name: '东台市三仓中学', snum: '1690', tnum: '94'},
-          {name: '东台市安丰中学', snum: '1689', tnum: '90'},
-          {name: '东台市第一中学', snum: '1517', tnum: '83'}
-        ],
+        schools: {},
+        studentGender: {},
+        fourData: {},
+        teacherEdu: {},
+        teacherTitle: {},
       }
     },
-    mounted() {
+    created() {
       this.loadData();
     },
     methods: {
       loadData() {
-        this.drawRing(document.getElementById('ring_x'), "小学", 34, 35);
-        this.drawRing(document.getElementById('ring_c'), "中学", 34, 35);
-        this.drawRing(document.getElementById('ring_g'), "高中", 34, 35);
-        this.drawLeftBar();
-        this.drawPie();
-        this.drawRightBar();
-        this.drawBottom0();
-        this.drawBottom1();
-        this.drawBottom2();
-        this.drawMap();
+        mainDataApi.getSchoolInfo()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.schools = ret.data;
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        mainDataApi.getStudentInfo()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.studentGender = ret.data;
+              this.drawRing(document.getElementById('ring_x'), "小学", this.studentGender['小学']['男'], this.studentGender['小学']['女']);
+              this.drawRing(document.getElementById('ring_c'), "初中", this.studentGender['初中']['男'], this.studentGender['初中']['女']);
+              this.drawRing(document.getElementById('ring_g'), "高中", this.studentGender['高中']['男'], this.studentGender['高中']['女']);
+              this.drawLeftBar();
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        mainDataApi.getFourTotalNum()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.fourData = ret.data;
+              this.drawBottom0();
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        mainDataApi.getSchoolTypeNum()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.schoolType = ret.data;
+              this.drawBottom1();
+              this.drawBottom2();
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        mainDataApi.getTownSchoolInfo()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.townData = ret.data;
+              this.drawMap();
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        mainDataApi.getTeacherEdu()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.teacherEdu = ret.data;
+              this.drawPie();
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        mainDataApi.getTeacherTitle()
+          .then(response => {
+            var ret = response.data;
+            if (ret.flag) {
+              this.teacherTitle = ret.data;
+              this.drawRightBar();
+            } else {
+              console.log(ret.message);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
       },
       drawMap() {
         var geoJson = GeoJson.getGeoJson();
@@ -262,19 +334,19 @@
           '弶港镇': [120.856456, 32.737087],
         };
         var data = [
-          {name: '五烈镇', value: [2, 1, 1]},
-          {name: '南沈灶镇', value: [2, 2, 2]},
-          {name: '溱东镇', value: [2, 2, 2]},
-          {name: '时堰镇', value: [2, 2, 2]},
-          {name: '梁垛镇', value: [2, 2, 2]},
-          {name: '安丰镇', value: [2, 2, 2]},
-          {name: '富安镇', value: [2, 2, 2]},
-          {name: '唐洋镇', value: [2, 2, 2]},
-          {name: '新街镇', value: [2, 2, 2]},
-          {name: '许河镇', value: [2, 2, 2]},
-          {name: '三仓镇', value: [2, 2, 2]},
-          {name: '头灶镇', value: [2, 2, 2]},
-          {name: '弶港镇', value: [2, 2, 2]},
+          {name: '五烈镇', value: this.townData['五烈镇']},
+          {name: '南沈灶镇', value: this.townData['南沈灶镇']},
+          {name: '溱东镇', value: this.townData['溱东镇']},
+          {name: '时堰镇', value: this.townData['时堰镇']},
+          {name: '梁垛镇', value: this.townData['梁垛镇']},
+          {name: '安丰镇', value: this.townData['安丰镇']},
+          {name: '富安镇', value: this.townData['富安镇']},
+          {name: '唐洋镇', value: this.townData['唐洋镇']},
+          {name: '新街镇', value: this.townData['新街镇']},
+          {name: '许河镇', value: this.townData['许河镇']},
+          {name: '三仓镇', value: this.townData['三仓镇']},
+          {name: '头灶镇', value: this.townData['头灶镇']},
+          {name: '弶港镇', value: this.townData['弶港镇']},
         ];
         var lineData = [
           {"fromName": "五烈镇", "toName": "五烈镇", "coords": [[120.292621, 32.925827], [120.272786, 32.911522]]},
@@ -312,17 +384,17 @@
           {"fromName": "三仓北", "toName": "三仓镇", "coords": [[120.691325, 32.821272], [120.69075, 32.719751]]},
           {"fromName": "三仓镇", "toName": "唐洋镇", "coords": [[120.69075, 32.719751], [120.687301, 32.705169]]},
           {"fromName": "三仓镇", "toName": "唐洋镇", "coords": [[120.687301, 32.705169], [120.695349, 32.679888]]},
-          {"fromName": "三仓镇", "toName": "唐洋镇", "coords": [[120.695349, 32.679888], [120.699374,32.603029]]},
-          {"fromName": "东1", "toName": "东2", "coords": [[120.784461,32.980845], [120.831604,32.962429]]},
-          {"fromName": "东2", "toName": "东3", "coords": [[120.831604,32.962429], [120.883347,32.897457]]},
-          {"fromName": "东3", "toName": "东4", "coords": [[120.883347,32.897457], [120.886221,32.873201]]},
-          {"fromName": "东3", "toName": "东5", "coords": [[120.886221,32.873201], [120.923016,32.832922]]},
-          {"fromName": "东3", "toName": "东6", "coords": [[120.923016,32.832922], [120.921291,32.801851]]},
-          {"fromName": "东3", "toName": "东7", "coords": [[120.921291,32.801851], [120.910368,32.763968]]},
-          {"fromName": "东3", "toName": "东8", "coords": [[120.910368,32.763968], [120.89312,32.724612]]},
-          {"fromName": "东3", "toName": "东9", "coords": [[120.89312,32.724612], [120.891396,32.602542]]},
+          {"fromName": "三仓镇", "toName": "唐洋镇", "coords": [[120.695349, 32.679888], [120.699374, 32.603029]]},
+          {"fromName": "东1", "toName": "东2", "coords": [[120.784461, 32.980845], [120.831604, 32.962429]]},
+          {"fromName": "东2", "toName": "东3", "coords": [[120.831604, 32.962429], [120.883347, 32.897457]]},
+          {"fromName": "东3", "toName": "东4", "coords": [[120.883347, 32.897457], [120.886221, 32.873201]]},
+          {"fromName": "东3", "toName": "东5", "coords": [[120.886221, 32.873201], [120.923016, 32.832922]]},
+          {"fromName": "东3", "toName": "东6", "coords": [[120.923016, 32.832922], [120.921291, 32.801851]]},
+          {"fromName": "东3", "toName": "东7", "coords": [[120.921291, 32.801851], [120.910368, 32.763968]]},
+          {"fromName": "东3", "toName": "东8", "coords": [[120.910368, 32.763968], [120.89312, 32.724612]]},
+          {"fromName": "东3", "toName": "东9", "coords": [[120.89312, 32.724612], [120.891396, 32.602542]]},
         ];
-        var dtData = [{name: '东台市', value: [10, 2, 3]},];
+        var dtData = [{name: '东台市', value: this.townData['东台市']},];
         var convertData = function (data) {
           var res = [];
           for (var i = 0; i < data.length; i++) {
@@ -353,8 +425,8 @@
               } else {
                 return e.name + '<br>'
                   + '小学  ：' + '<font color="#35F2EB">' + e.value[2] + '</font>' + '  所<br>'
-                  + '初中  ：' + '<font color="#35F2EB">' + e.value[2] + '</font>' + '  所<br>'
-                  + '高中  ：' + '<font color="#35F2EB">' + e.value[2] + '</font>' + '  所';
+                  + '初中  ：' + '<font color="#35F2EB">' + e.value[3] + '</font>' + '  所<br>'
+                  + '高中  ：' + '<font color="#35F2EB">' + e.value[4] + '</font>' + '  所';
               }
             }
           },
@@ -417,7 +489,6 @@
               coordinateSystem: 'geo',
               symbol: 'circle',
               symbolSize: function (val) {
-                console.log("尺寸" + JSON.stringify(val));
                 var num = val[2];
                 if (num < 20) {
                   return 30
@@ -542,8 +613,8 @@
           dataset: {
             dimensions: ['product', '2015', '2016'],
             source: [
-              {product: 'Matcha Latte', '2015': 43.3, '2016': 85.8, '2017': 93.7},
-              {product: 'Milk Tea', '2015': 83.1, '2016': 73.4, '2017': 55.1}
+              {product: 'Matcha Latte', '2015': this.fourData['班级'], '2016': this.fourData['学生']},
+              {product: 'Milk Tea', '2015': this.fourData['教师'], '2016': this.fourData['学生']}
             ]
           },
           xAxis: {
@@ -583,6 +654,12 @@
         bar.setOption(option);
       },
       drawBottom1() {
+        var v1 = this.schoolType['小学'];
+        var v2 = this.schoolType['初中'];
+        var v3 = this.schoolType['高中'];
+        var p1 = Math.round(v1 / (v1 + v2 + v3) * 100);
+        var p2 = Math.round(v2 / (v1 + v2 + v3) * 100);
+        var p3 = Math.round(v3 / (v1 + v2 + v3) * 100);
         let bar = this.$echarts.init(document.getElementById('bottom_1'));
         var labelRight = {
           normal: {
@@ -612,7 +689,7 @@
             axisLabel: {show: false},
             axisTick: {show: false},
             splitLine: {show: false},
-            data: ['38%', '高中', '20%', '初中', '60%', '小学']
+            data: [p3 + '%', '高中', p2 + '%', '初中', p1 + '%', '小学']
           },
           series: [
             {
@@ -742,7 +819,7 @@
           },
           xAxis: {
             type: 'category',
-            data: ['正高级', '高级', '一级', '二级', '三级'],
+            data: ['其它', '正高级', '高级', '一级', '二级', '三级'],
             axisLabel: {
               color: '#FFFFFF'
             },
@@ -779,7 +856,7 @@
             name: '总体',
             type: 'bar',
             barGap: 0,
-            data: [320, 332, 301, 334, 390],
+            data: this.teacherTitle['总体'],
             itemStyle: {
               normal: {
                 color: '#A953FF',
@@ -791,7 +868,7 @@
             {
               name: '男',
               type: 'bar',
-              data: [220, 182, 191, 234, 290],
+              data: this.teacherTitle['男'],
               itemStyle: {
                 normal: {
                   color: '#29AAFF',
@@ -803,7 +880,7 @@
             {
               name: '女',
               type: 'bar',
-              data: [150, 232, 201, 154, 190],
+              data: this.teacherTitle['女'],
               itemStyle: {
                 normal: {
                   color: '#FF973A',
@@ -830,11 +907,12 @@
             top: '7%',
             right: 0,
             data: [
+              {name: '教授', icon: 'pin', textStyle: {color: '#FFF', fontSize: 8}},
               {name: '博士', icon: 'pin', textStyle: {color: '#FFF', fontSize: 8}},
               {name: '硕士', icon: 'circle', textStyle: {color: '#FFF', fontSize: 8}},
               {name: '本科', icon: 'circle', textStyle: {color: '#FFF', fontSize: 8}},
               {name: '大专', icon: 'circle', textStyle: {color: '#FFF', fontSize: 8}},
-              {name: '高中及以下', icon: 'circle', textStyle: {color: '#FFF', fontSize: 8}},
+              {name: '其它', icon: 'circle', textStyle: {color: '#FFF', fontSize: 8}},
             ]
           },
           series: [
@@ -868,13 +946,13 @@
               },
               data: [
                 {
-                  value: 335, name: '男老师', selected: true,
+                  value: this.teacherEdu['男'], name: '男老师', selected: true,
                   itemStyle: {
                     color: '#1EC8CA'
                   }
                 },
                 {
-                  value: 679, name: '女老师',
+                  value: this.teacherEdu['女'], name: '女老师',
                   itemStyle: {
                     color: '#B6A2E0'
                   }
@@ -902,31 +980,37 @@
               },
               data: [
                 {
-                  value: 335, name: '博士',
+                  value: this.teacherEdu['教授'], name: '教授',
+                  itemStyle: {
+                    color: '#FA5367'
+                  }
+                },
+                {
+                  value: this.teacherEdu['博士'], name: '博士',
                   itemStyle: {
                     color: '#A952FF'
                   }
                 },
                 {
-                  value: 310, name: '硕士',
+                  value: this.teacherEdu['硕士'], name: '硕士',
                   itemStyle: {
                     color: '#70BCFF'
                   }
                 },
                 {
-                  value: 234, name: '本科',
+                  value: this.teacherEdu['本科'], name: '本科',
                   itemStyle: {
                     color: '#FF973A'
                   }
                 },
                 {
-                  value: 135, name: '大专',
+                  value: this.teacherEdu['大专'], name: '大专',
                   itemStyle: {
                     color: '#6887FF'
                   }
                 },
                 {
-                  value: 1048, name: '高中及以下',
+                  value: this.teacherEdu['其它'], name: '其它',
                   itemStyle: {
                     color: '#36F1EA'
                   }
@@ -994,7 +1078,7 @@
             name: '总体',
             type: 'bar',
             barGap: 0,
-            data: [320, 332, 301],
+            data: [(this.studentGender['小学']['男'] + this.studentGender['小学']['女']), (this.studentGender['初中']['男'] + this.studentGender['初中']['女']), (this.studentGender['高中']['男'] + this.studentGender['高中']['女'])],
             itemStyle: {
               normal: {
                 color: '#A953FF',
@@ -1006,7 +1090,7 @@
             {
               name: '男',
               type: 'bar',
-              data: [220, 182, 191],
+              data: [this.studentGender['小学']['男'], this.studentGender['初中']['男'], this.studentGender['高中']['男']],
               itemStyle: {
                 normal: {
                   color: '#29AAFF',
@@ -1018,7 +1102,7 @@
             {
               name: '女',
               type: 'bar',
-              data: [150, 232, 201],
+              data: [this.studentGender['小学']['女'], this.studentGender['初中']['女'], this.studentGender['高中']['女']],
               itemStyle: {
                 normal: {
                   color: '#FF973A',
@@ -1031,11 +1115,13 @@
         bar.setOption(option);
       },
       drawRing(ringDiv, title, mNum, fNum) {
+        var percent = fNum / (mNum + fNum) * 100;
+        percent = Math.round(percent);
         let ring = this.$echarts.init(ringDiv);
         var option = {
           title: {
             text: '女同学',
-            subtext: ' 56%',
+            subtext: ' ' + percent + "%",
             left: '33%',
             top: '35%',
             textStyle: {
