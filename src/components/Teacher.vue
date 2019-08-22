@@ -157,13 +157,13 @@
       }
     },
     created() {
+      this.initWebSocket();
       this.loadData();
     },
-    mounted() {
-      this.loadWS();
-    },
-    beforeDestroy() {
-      this.websocket.close();
+    destroyed() {
+      if (this.websocket != null) {
+        this.websocket.close();
+      }
     },
     methods: {
       loadData() {
@@ -176,60 +176,48 @@
         this.loadCenter1();
         this.loadCenter2();
       },
-      loadWS() {
-        var self = this;
-        if ('WebSocket' in window) {
-          this.websocket = new WebSocket("ws://127.0.0.1:9001/websocket");
-        } else {
-          alert('Not support websocket')
+      initWebSocket() {
+        var wsuri = process.env.WS_API + "/websocket";
+        this.websocket = new WebSocket(wsuri);
+        this.websocket.onopen = this.websocketonopen;
+        this.websocket.onmessage = this.websocketonmessage;
+        this.websocket.onerror = this.websocketonerror;
+        this.websocket.onclose = this.websocketclose;
+      },
+      websocketonopen() {
+        console.log("socket 建立成功");
+      },
+      websocketonmessage(event) {
+        var index = event.data;
+        if (index == 1) {
+          this.loadLineLeft();
+        } else if (index == 2) {
+          this.loadLeftBar();
+        } else if (index == 3) {
+          this.loadLeftBar();
+        } else if (index == 4) {
+          this.loadCenter();
+        } else if (index == 5) {
+          this.loadCenter0();
+        } else if (index == 6) {
+          this.loadCenter1();
+        } else if (index == 7) {
+          this.loadCenter2();
+        } else if (index == 8) {
+          this.loadLineRight();
+        } else if (index == 9) {
+          this.loadRightBar();
+        } else if (index == 10) {
+          this.loadRightBar();
+        } else if (index == 11) {
+          this.loadRightBar();
         }
-
-        //连接发生错误的回调方法
-        this.websocket.onerror = function () {
-          alert("socket 出现问题");
-        };
-
-        //连接成功建立的回调方法
-        this.websocket.onopen = function (event) {
-          console.log("socket 建立成功");
-        }
-
-        //接收到消息的回调方法
-        this.websocket.onmessage = function (event) {
-          var index = event.data;
-          if (index == 1) {
-            self.loadLineLeft();
-          } else if (index == 2) {
-            self.loadLeftBar();
-          } else if (index == 3) {
-            self.loadLeftBar();
-          } else if (index == 4) {
-            self.loadCenter();
-          } else if (index == 5) {
-            self.loadCenter0();
-          } else if (index == 6) {
-            self.loadCenter1();
-          } else if (index == 7) {
-            self.loadCenter2();
-          } else if (index == 8) {
-            self.loadLineRight();
-          } else if (index == 9) {
-            self.loadRightBar();
-          } else if (index == 10) {
-            self.loadRightBar();
-          } else if (index == 11) {
-            self.loadRightBar();
-          }
-        }
-        //连接关闭的回调方法
-        this.websocket.onclose = function () {
-          console.log("socket 关闭");
-        }
-
-        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
-        // this.window.onbeforeunload = function () {
-        //   this.websocket.close();
-        // }
+      },
+      websocketonerror() {
+        alert("socket 出现问题");
+      },
+      websocketclose(e) {
+        console.log("connection closed (" + e.code + ")");
       },
       loadLineLeft() {
         schoolApi.findBSKNum()

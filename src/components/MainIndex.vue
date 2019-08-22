@@ -213,12 +213,43 @@
         fourData: {},
         teacherEdu: {},
         teacherTitle: {},
+        websocket: null,
       }
     },
     created() {
+      this.initWebSocket();
       this.loadData();
     },
+    destroyed() {
+      if (this.websocket != null) {
+        this.websocket.close();
+      }
+      console.log("destroyed");
+    },
     methods: {
+      initWebSocket() {
+        var wsuri = process.env.WS_API + "/websocket";
+        this.websocket = new WebSocket(wsuri);
+        this.websocket.onopen = this.websocketonopen;
+        this.websocket.onmessage = this.websocketonmessage;
+        this.websocket.onerror = this.websocketonerror;
+        this.websocket.onclose = this.websocketclose;
+      },
+      websocketonopen() {
+        console.log("socket 建立成功");
+      },
+      websocketonmessage(event) {
+        var index = event.data;
+        if (index == 20) {
+          this.loadData();
+        }
+      },
+      websocketonerror() {
+        alert("socket 出现问题");
+      },
+      websocketclose(e) {
+        console.log("connection closed (" + e.code + ")");
+      },
       loadData() {
         mainDataApi.getSchoolInfo()
           .then(response => {
