@@ -10,7 +10,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "ajv": "^6.10.2",
+    "ajv": "^6.12.3",
     "axios": "^0.19.0",
     "echarts": "^4.2.1",
     "element-ui": "^2.11.1",
